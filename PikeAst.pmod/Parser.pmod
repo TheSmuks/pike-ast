@@ -389,7 +389,6 @@ private object|void _parse_type_or_decl(mapping state,
       // Parse body if present
       next = _skip_ws(state);
       if (next && next->text == "{") {
-        POS++; // skip {
         _skip_block_body(state);
       }
       return method;
@@ -400,7 +399,6 @@ private object|void _parse_type_or_decl(mapping state,
       _advance_ws(state);
       next = _skip_ws(state);
       if (next && next->text == "{") {
-        POS++; // skip {
         _skip_block_body(state);
       }
       return func;
