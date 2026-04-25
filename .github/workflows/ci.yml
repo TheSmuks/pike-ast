@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Pike 8.0
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pike8.0 || true
+          # Try building from source if package not available
+          if ! command -v pike &> /dev/null; then
+            git clone https://git.lysator.liu.se/pikelang/pike.git /tmp/pike-src --depth=1
+            cd /tmp/pike-src
+            make
+            echo "$(pwd)/build/linux-$(uname -m)" >> $GITHUB_PATH
+          fi
+
+      - name: Install pmp
+        run: |
+          git clone https://github.com/TheSmuks/pmp.git /tmp/pmp
+
+      - name: Install dependencies
+        run: pike /tmp/pmp/bin/pmp.pike install
+
+      - name: Run tests
+        run: pike /tmp/pmp/bin/pmp.pike run run_tests.pike tests/

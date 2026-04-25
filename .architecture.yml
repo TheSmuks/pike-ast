@@ -1,0 +1,8 @@
+max_file_lines: 500
+max_file_lines_hard: 1000
+max_function_lines: 50
+max_exports: 20
+max_nesting_depth: 4
+ignore_patterns:
+  - "**/*.generated.*"
+  - "docs/**"

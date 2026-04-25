@@ -1,0 +1,22 @@
+# Dependencies
+modules/
+.pike-env/
+pike.lock
+pike.lock.prev
+
+# Build artifacts
+*.o
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

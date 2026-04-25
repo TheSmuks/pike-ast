@@ -1,0 +1,10 @@
+{
+  "name": "pike-ast",
+  "version": "0.1.0",
+  "description": "AST library for Pike source code — tokenization, parsing, querying, and pattern matching",
+  "source": "github.com/TheSmuks/pike-ast",
+  "dependencies": {
+    "PUnit": "github.com/TheSmuks/punit-tests#v1.0.0",
+    "PikeAst": "./"
+  }
+}
