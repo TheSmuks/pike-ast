@@ -1,5 +1,12 @@
 # pike-ast
 
+[![CI](https://github.com/TheSmuks/pike-ast/actions/workflows/ci.yml/badge.svg)](https://github.com/TheSmuks/pike-ast/actions/workflows/ci.yml)
+[![Commit Lint](https://github.com/TheSmuks/pike-ast/actions/workflows/commit-lint.yml/badge.svg)](https://github.com/TheSmuks/pike-ast/actions/workflows/commit-lint.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/TheSmuks/pike-ast/releases/tag/v0.1.0)
+[![Pike 8.0](https://img.shields.io/badge/pike-8.0-informational.svg)](https://pike.lysator.liu.se/)
+
+
 AST library for Pike source code — tokenization, parsing, tree traversal, querying, and pattern matching.
 
 Built on `Parser.Pike.split()` and `group()` from the Pike stdlib.
