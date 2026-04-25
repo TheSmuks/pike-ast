@@ -83,11 +83,7 @@ class Transformer {
   object run(object root) {
     root = transform(root);
     // Transform children
-    array new_children = ({});
-    foreach(root->children; ; object child) {
-      new_children += ({ run(child) });
-    }
-    root->children = new_children;
+    root->children = map(root->children, run);
     return root;
   }
 }

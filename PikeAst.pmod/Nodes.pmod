@@ -96,12 +96,11 @@ class Node {
   //! @returns
   //!   Flat array of all descendants.
   array(object) descendants() {
-    array(object) result = ({});
-    foreach(children; ; object child) {
-      result += ({ child });
-      result += child->descendants();
+    array(array(object)) parts = allocate(sizeof(children));
+    foreach(children; int i; object child) {
+      parts[i] = ({ child }) + child->descendants();
     }
-    return result;
+    return Array.flatten(parts);
   }
 
   //! Get all descendants matching a node type.
@@ -111,13 +110,8 @@ class Node {
   //! @returns
   //!   Array of matching nodes.
   array(object) descendants_of_type(string type) {
-    array(object) result = ({});
-    foreach(children; ; object child) {
-      if (child->node_type == type)
-        result += ({ child });
-      result += child->descendants_of_type(type);
-    }
-    return result;
+    return Array.filter(descendants(),
+      lambda(object n) { return n->node_type == type; });
   }
 
   //! Find the first descendant matching a type.

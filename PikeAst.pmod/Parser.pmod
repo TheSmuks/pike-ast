@@ -242,7 +242,8 @@ private object|void _parse_constant(mapping state, array(string) modifiers) {
       object t = _skip_ws(state);
       if (!t) break;
       if (t->text == ";") { POS++; break; }
-      POS++;
+      if (t->is_block_start()) _skip_balanced(state, t->text);
+      else POS++;
     }
   }
 
@@ -280,7 +281,8 @@ private object|void _parse_enum(mapping state, array(string) modifiers) {
         while (POS < sizeof(TOK)) {
           tok = _skip_ws(state);
           if (!tok || tok->text == "," || tok->text == "}") break;
-          POS++;
+          if (tok->is_block_start()) _skip_balanced(state, tok->text);
+          else POS++;
         }
       }
     }
@@ -555,7 +557,7 @@ private string _read_dotted_name(mapping state) {
         POS++;
         _advance_ws(state);
       } else break;
-    } else if (tok->text == "\"") {
+    } else if (sizeof(tok->text) > 0 && tok->text[0] == '\"') {
       // String import: import "path/to/module"
       name += tok->text;
       POS++;
@@ -593,24 +595,20 @@ private array _parse_parameter_list(mapping state) {
     string param_type = "";
     string param_name = "";
 
-    // Read type if present
     if (tok->is_keyword() || tok->is_identifier()) {
-      // Peek ahead: is this a type followed by a name?
-      if (PEEK_AHEAD(2) &&
-          !(PEEK_AHEAD(1)->is_whitespace() &&
-            PEEK_AHEAD(2)->is_identifier())) {
-        // Probably just a name, not type+name
-        param_name = tok->text;
+      // Save position in case this is just a name
+      int saved_pos = POS;
+      param_type = _read_type(state);
+      _advance_ws(state);
+      object next = _skip_ws(state);
+      if (next && next->is_identifier()) {
+        // type followed by name
+        param_name = next->text;
         POS++;
       } else {
-        param_type = tok->text;
-        POS++;
-        _advance_ws(state);
-        tok = _skip_ws(state);
-        if (tok && tok->is_identifier()) {
-          param_name = tok->text;
-          POS++;
-        }
+        // No name after type — the 'type' was actually the name
+        param_name = param_type;
+        param_type = "";
       }
     }
 

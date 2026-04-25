@@ -93,13 +93,9 @@ Doc parse_doc_comment(array(string) lines, void|SourceRange range) {
     return Doc();
 
   // Strip //! prefix from each line
-  array(string) clean = ({});
-  foreach(lines; ; string line) {
-    if (has_prefix(line, "//!"))
-      clean += ({ line[3..] });
-    else
-      clean += ({ line });
-  }
+  array(string) clean = map(lines, lambda(string line) {
+    return has_prefix(line, "//!") ? line[3..] : line;
+  });
 
   Doc doc = Doc();
   if (range) doc->range = range;
@@ -293,17 +289,6 @@ private void _parse_param_tag(string text, Doc doc) {
     name = text[..space - 1];
     desc = String.trim_all_whites(text[space + 1..]);
 
-    // Check if first word is a type annotation
-    int next_space = search(desc, " ");
-    if (next_space > 0) {
-      string possible_type = desc[..next_space - 1];
-      // If next word looks like a name (lowercase, no parens)
-      string rest = String.trim_all_whites(desc[next_space + 1..]);
-      if (sizeof(rest) > 0 &&
-          !(search(possible_type, "(") >= 0)) {
-        // Keep name and desc as-is for now
-      }
-    }
   } else {
     name = text;
   }
@@ -325,6 +310,9 @@ private array(mapping) _parse_tags(array(string) lines) {
 
     // Handle @code/@endcode blocks
     if (has_prefix(trimmed, "@code")) {
+      if (current_tag != "" && current_text != "") {
+        tags += ({ (["name": current_tag, "text": current_text]) });
+      }
       in_code = 1;
       current_tag = "code";
       current_text = "";
@@ -351,21 +339,10 @@ private array(mapping) _parse_tags(array(string) lines) {
       }
 
       // Parse new tag
-      int space = search(trimmed[1..], " ");
-      if (space >= 0) {
-        current_tag = trimmed[1..space];
-        current_text = String.trim_all_whites(trimmed[space + 2..]);
-      } else {
-        // Tag with no text on this line
-        int end = sizeof(trimmed);
-        foreach(trimmed[1..]; int i; int ch) {
-          if (!((ch >= 'a' && ch <= 'z') || ch == '_')) {
-            end = i + 1;
-            break;
-          }
-        }
-        current_tag = trimmed[1..end - 1];
-        current_text = "";
+      string tag_name, tag_rest;
+      if (sscanf(trimmed, "@%[a-z_]%s", tag_name, tag_rest) >= 1) {
+        current_tag = tag_name;
+        current_text = String.trim_all_whites(tag_rest);
       }
     } else if (current_tag != "") {
       // Continuation of previous tag

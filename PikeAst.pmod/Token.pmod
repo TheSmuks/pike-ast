@@ -15,6 +15,7 @@ constant KEYWORDS = (<
   "lambda", "gauge", "catch", "typeof", "sscanf",
   "throw", "this", "this_program",
   "true", "false",
+  "global",
 >);
 
 //! Pike type keywords (used in declarations, not standalone).
@@ -164,6 +165,8 @@ class Token {
   }
 }
 
+private Regexp IDENT_RE = Regexp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+
 //! Classify a raw token string into a type.
 //!
 //! @param text
@@ -171,10 +174,7 @@ class Token {
 //! @returns
 //!   Token type string.
 string classify_token(string text) {
-  // Empty or newline -> whitespace
-  if (text == "" || text == "\n" || (sizeof(text) > 0 &&
-      has_prefix(text, "\n") && sizeof(text) == 1))
-    return "whitespace";
+  if (text == "") return "whitespace";
 
   // Pure whitespace
   if (sizeof(text) > 0 && String.trim_all_whites(text) == "")
@@ -235,18 +235,7 @@ string classify_token(string text) {
 
   // Identifiers: start with letter or underscore, followed by
   // letters, digits, or underscores
-  if (sizeof(text) > 0 && (text[0] >= 'a' && text[0] <= 'z' ||
-      text[0] >= 'A' && text[0] <= 'Z' || text[0] == '_')) {
-    int valid = 1;
-    foreach(text[1..]; int _i; int ch) {
-      if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
-            (ch >= '0' && ch <= '9') || ch == '_')) {
-        valid = 0;
-        break;
-      }
-    }
-    if (valid) return "identifier";
-  }
+  if (IDENT_RE->match(text)) return "identifier";
 
   // Fallback: treat unknown single chars as operators if they're punctuation
   if (sizeof(text) == 1 && text[0] < '0')

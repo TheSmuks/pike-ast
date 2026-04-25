@@ -15,14 +15,10 @@
 //!   @expr{Parser.Pike.UnterminatedStringError@} on unterminated strings.
 array(PikeAst.Token.Token) tokenize(string source, void|string filename) {
   // Use Parser.Pike.split for raw tokens
-  array(string) raw_tokens;
-  if (mixed e = catch {
-    raw_tokens = Parser.Pike.split(source);
-  }) {
-    throw(e);
-  }
+  array(string) raw_tokens = Parser.Pike.split(source);
 
-  array(PikeAst.Token.Token) result = ({});
+  array(PikeAst.Token.Token) result = allocate(sizeof(raw_tokens));
+  int idx = 0;
   int pos = 0;       // byte offset in source
   int line = 1;      // 1-indexed line
   int col = 0;       // 0-indexed column
@@ -33,7 +29,7 @@ array(PikeAst.Token.Token) tokenize(string source, void|string filename) {
     PikeAst.Token.Token t =
       PikeAst.Token.Token(text, line, col, type, pos, pos + sizeof(text),
                            filename);
-    result += ({ t });
+    result[idx++] = t;
 
     // Advance position
     pos += sizeof(text);

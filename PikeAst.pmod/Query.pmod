@@ -72,13 +72,8 @@ class Query {
   //! @returns
   //!   Array of CallExpr nodes.
   array(object) calls_to(string name) {
-    array(object) result = ({});
-    array(object) calls = by_type("call");
-    foreach(calls; ; object call) {
-      if (call->attributes->callee == name)
-        result += ({ call });
-    }
-    return result;
+    return Array.filter(by_type("call"),
+      lambda(object call) { return call->attributes->callee == name; });
   }
 
   //! Find all references to an identifier.
@@ -88,15 +83,7 @@ class Query {
   //! @returns
   //!   Array of nodes referencing this name.
   array(object) references_to(string name) {
-    array(object) result = ({});
-    // Collect from identifiers, imports, inherits, etc.
-    array(object) all = root->descendants();
-    foreach(all; ; object node) {
-      string|void n = node->name();
-      if (n == name)
-        result += ({ node });
-    }
-    return result;
+    return by_name(name);
   }
 
   //! Find all imports of a module.
@@ -106,13 +93,8 @@ class Query {
   //! @returns
   //!   Array of ImportDecl nodes.
   array(object) imports_of(string module_path) {
-    array(object) result = ({});
-    array(object) imports = by_type("import");
-    foreach(imports; ; object imp) {
-      if (imp->attributes->module_path == module_path)
-        result += ({ imp });
-    }
-    return result;
+    return Array.filter(by_type("import"),
+      lambda(object imp) { return imp->attributes->module_path == module_path; });
   }
 
   //! Find all classes that inherit from a given class.
@@ -122,14 +104,11 @@ class Query {
   //! @returns
   //!   Array of InheritDecl nodes.
   array(object) inherits_from(string class_name) {
-    array(object) result = ({});
-    array(object) inherits = by_type("inherit");
-    foreach(inherits; ; object inh) {
-      if (inh->attributes->parent_path == class_name ||
-          has_suffix(inh->attributes->parent_path, "." + class_name))
-        result += ({ inh });
-    }
-    return result;
+    return Array.filter(by_type("inherit"),
+      lambda(object inh) {
+        return inh->attributes->parent_path == class_name ||
+          has_suffix(inh->attributes->parent_path, "." + class_name);
+      });
   }
 
   //! Collect all unique identifiers in the tree.
@@ -137,13 +116,7 @@ class Query {
   //! @returns
   //!   Multiset of identifier names.
   multiset all_identifiers() {
-    multiset ids = (<>);
-    array(object) all = root->descendants();
-    foreach(all; ; object node) {
-      string|void n = node->name();
-      if (n) ids[n] = 1;
-    }
-    return ids;
+    return _collect_identifiers(root, (<>));
   }
 
   //! Find nodes matching a structural pattern.
@@ -268,6 +241,15 @@ private array(object) _collect_at_location(object node, int line,
   return result;
 }
 
+
+private multiset _collect_identifiers(object node, multiset ids) {
+  string|void n = node->name();
+  if (n) ids[n] = 1;
+  foreach(node->children; ; object child) {
+    _collect_identifiers(child, ids);
+  }
+  return ids;
+}
 //! Convenience: parse and query in one step.
 //!
 //! @param source

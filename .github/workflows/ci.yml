@@ -27,11 +27,18 @@ jobs:
       - name: Verify Pike
         run: pike --version
 
-      - name: Install pmp
-        run: git clone https://github.com/TheSmuks/pmp.git /tmp/pmp
+      - name: Install PUnit
+        run: |
+          git clone --depth 1 --branch v1.0.0 https://github.com/TheSmuks/punit-tests.git /tmp/punit
+          mkdir -p modules
+          ln -s /tmp/punit/PUnit.pmod modules/PUnit.pmod
 
-      - name: Install dependencies
-        run: pike /tmp/pmp/bin/pmp.pike install
+      - name: Link PikeAst module
+        run: |
+          mkdir -p modules
+          ln -s "$(pwd)/PikeAst.pmod" modules/PikeAst.pmod
 
       - name: Run tests
-        run: pike /tmp/pmp/bin/pmp.pike run run_tests.pike tests/
+        env:
+          PIKE_MODULE_PATH: modules
+        run: pike run_tests.pike tests/
