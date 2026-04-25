@@ -384,6 +384,7 @@ private object|void _parse_type_or_decl(mapping state,
     if (sizeof(modifiers) > 0 || state->in_class) {
       // Inside a class -> method
       object method = MethodDecl(name, return_type, modifiers, params);
+      method->token = name_tok;
       _advance_ws(state);
       // Parse body if present
       next = _skip_ws(state);
@@ -395,6 +396,7 @@ private object|void _parse_type_or_decl(mapping state,
     } else {
       // Top-level -> function
       object func = FunctionDecl(name, return_type, params);
+      func->token = name_tok;
       _advance_ws(state);
       next = _skip_ws(state);
       if (next && next->text == "{") {
